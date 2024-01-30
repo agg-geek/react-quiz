@@ -7,6 +7,8 @@ import Loader from './components/Loader';
 import ErrorMsg from './components/ErrorMsg';
 import StartScreen from './components/StartScreen';
 import Question from './components/Question';
+import NextButton from './components/NextButton';
+import ProgressBar from './components/ProgressBar';
 
 const initialState = {
 	questions: [],
@@ -33,6 +35,8 @@ function reducer(state, action) {
 				chosenOption,
 				points: state.points + isCorrectAns * question.points,
 			};
+		case 'nextQuestion':
+			return { ...state, currQues: state.currQues + 1, chosenOption: null };
 		default:
 			throw new Error('Unknown action ');
 	}
@@ -40,9 +44,10 @@ function reducer(state, action) {
 
 export default function App() {
 	const [state, dispatch] = useReducer(reducer, initialState);
-	const { questions, status, currQues, chosenOption } = state;
+	const { questions, status, currQues, chosenOption, points } = state;
 
 	const numQuestions = questions?.length;
+	const maxPoints = questions?.reduce((acc, curr) => acc + curr.points, 0);
 
 	useEffect(function () {
 		fetch('http://localhost:3000/questions')
@@ -61,11 +66,21 @@ export default function App() {
 					<StartScreen numQuestions={numQuestions} dispatch={dispatch} />
 				)}
 				{status === 'active' && (
-					<Question
-						question={questions.at(currQues)}
-						dispatch={dispatch}
-						chosenOption={chosenOption}
-					/>
+					<>
+						<ProgressBar
+							currQues={currQues}
+							numQuestions={numQuestions}
+							points={points}
+							maxPoints={maxPoints}
+							chosenOption={chosenOption}
+						/>
+						<Question
+							question={questions.at(currQues)}
+							dispatch={dispatch}
+							chosenOption={chosenOption}
+						/>
+						<NextButton dispatch={dispatch} chosenOption={chosenOption} />
+					</>
 				)}
 			</Main>
 		</div>
