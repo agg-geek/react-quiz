@@ -55,7 +55,12 @@ function reducer(state, action) {
 				highScore: Math.max(state.highScore, state.points),
 			};
 		case 'restart':
-			return { ...initialState, questions: state.questions, status: 'ready' };
+			return {
+				...initialState,
+				questions: state.questions,
+				status: 'ready',
+				highScore: state.highScore,
+			};
 		case 'tick':
 			return {
 				...state,

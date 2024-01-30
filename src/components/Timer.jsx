@@ -9,11 +9,6 @@ function Timer({ dispatch, timeLeft }) {
 			dispatch({ type: 'tick' });
 		}, 1000);
 
-		// since each effect runs twice in dev mode due to StrictMode
-		// the time decreases by 2 seconds every second
-		// we need to clear the interval of the previous useeffect
-		// also, the clearinterval is necessary as if you restarted quiz
-		// then multiple interval timers decreased the time even more
 		return () => clearInterval(id);
 	}, []);
 
