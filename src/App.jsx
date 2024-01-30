@@ -9,7 +9,11 @@ import StartScreen from './components/StartScreen';
 import Question from './components/Question';
 import NextButton from './components/NextButton';
 import ProgressBar from './components/ProgressBar';
+import Timer from './components/Timer';
+import Footer from './components/Footer';
 import FinishScreen from './components/FinishScreen';
+
+const SECS_PER_QUESTION = 20;
 
 const initialState = {
 	questions: [],
@@ -18,6 +22,7 @@ const initialState = {
 	chosenOption: null,
 	points: 0,
 	highScore: 0,
+	timeLeft: 100,
 };
 
 function reducer(state, action) {
@@ -27,7 +32,11 @@ function reducer(state, action) {
 		case 'fetchFailed':
 			return { ...state, status: 'error' };
 		case 'startQuiz':
-			return { ...state, status: 'active' };
+			return {
+				...state,
+				status: 'active',
+				timeLeft: state.questions.length * SECS_PER_QUESTION,
+			};
 		case 'newAnswer':
 			const question = state.questions.at(state.currQues);
 			const chosenOption = action.payload;
@@ -47,6 +56,12 @@ function reducer(state, action) {
 			};
 		case 'restart':
 			return { ...initialState, questions: state.questions, status: 'ready' };
+		case 'tick':
+			return {
+				...state,
+				timeLeft: state.timeLeft - 1,
+				status: state.timeLeft === 0 ? 'finish' : state.status,
+			};
 		default:
 			throw new Error('Unknown action ');
 	}
@@ -54,7 +69,8 @@ function reducer(state, action) {
 
 export default function App() {
 	const [state, dispatch] = useReducer(reducer, initialState);
-	const { questions, status, currQues, chosenOption, points, highScore } = state;
+	const { questions, status, currQues, chosenOption, points, highScore, timeLeft } =
+		state;
 
 	const numQuestions = questions?.length;
 	const maxPoints = questions?.reduce((acc, curr) => acc + curr.points, 0);
@@ -89,12 +105,15 @@ export default function App() {
 							dispatch={dispatch}
 							chosenOption={chosenOption}
 						/>
-						<NextButton
-							dispatch={dispatch}
-							chosenOption={chosenOption}
-							currQues={currQues}
-							numQuestions={numQuestions}
-						/>
+						<Footer>
+							<Timer dispatch={dispatch} timeLeft={timeLeft} />
+							<NextButton
+								dispatch={dispatch}
+								chosenOption={chosenOption}
+								currQues={currQues}
+								numQuestions={numQuestions}
+							/>
+						</Footer>
 					</>
 				)}
 				{status === 'finish' && (
