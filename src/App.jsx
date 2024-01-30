@@ -6,11 +6,13 @@ import Main from './components/Main';
 import Loader from './components/Loader';
 import ErrorMsg from './components/ErrorMsg';
 import StartScreen from './components/StartScreen';
+import Question from './components/Question';
 
 const initialState = {
 	questions: [],
-	// 'loading', 'error', 'ready', 'active', 'finished'
 	status: 'loading',
+	currQues: 0,
+	chosenOption: null,
 };
 
 function reducer(state, action) {
@@ -19,6 +21,10 @@ function reducer(state, action) {
 			return { ...state, questions: action.payload, status: 'ready' };
 		case 'fetchFailed':
 			return { ...state, status: 'error' };
+		case 'startQuiz':
+			return { ...state, status: 'active' };
+		case 'newAnswer':
+			return { ...state, chosenOption: action.payload };
 		default:
 			throw new Error('Unknown action ');
 	}
@@ -26,11 +32,10 @@ function reducer(state, action) {
 
 export default function App() {
 	const [state, dispatch] = useReducer(reducer, initialState);
-	const { questions, status } = state;
+	const { questions, status, currQues, chosenOption } = state;
 
 	const numQuestions = questions?.length;
 
-	// we use json-server to create a server which will serve the data
 	useEffect(function () {
 		fetch('http://localhost:3000/questions')
 			.then(res => res.json())
@@ -44,7 +49,16 @@ export default function App() {
 			<Main>
 				{status === 'loading' && <Loader />}
 				{status === 'error' && <ErrorMsg />}
-				{status === 'ready' && <StartScreen numQuestions={numQuestions} />}
+				{status === 'ready' && (
+					<StartScreen numQuestions={numQuestions} dispatch={dispatch} />
+				)}
+				{status === 'active' && (
+					<Question
+						question={questions.at(currQues)}
+						dispatch={dispatch}
+						chosenOption={chosenOption}
+					/>
+				)}
 			</Main>
 		</div>
 	);
