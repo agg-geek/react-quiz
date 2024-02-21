@@ -35,7 +35,8 @@ function reducer(state, action) {
 			return {
 				...state,
 				status: 'active',
-				timeLeft: state.questions.length * SECS_PER_QUESTION,
+				// timeLeft: state.questions.length * SECS_PER_QUESTION,
+				timeLeft: 10,
 			};
 		case 'newAnswer':
 			const question = state.questions.at(state.currQues);
@@ -65,7 +66,10 @@ function reducer(state, action) {
 			return {
 				...state,
 				timeLeft: state.timeLeft - 1,
-				status: state.timeLeft === 0 ? 'finish' : state.status,
+				...(state.timeLeft === 0 && {
+					status: 'finish',
+					highScore: Math.max(state.highScore, state.points),
+				}),
 			};
 		default:
 			throw new Error('Unknown action ');
